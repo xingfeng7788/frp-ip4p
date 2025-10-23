@@ -17,6 +17,7 @@ package client
 import (
 	"context"
 	"crypto/tls"
+	"log"
 	"net"
 	"strconv"
 	"strings"
@@ -67,6 +68,7 @@ func (c *defaultConnectorImpl) Open() error {
 
 	// special for quic
 	if strings.EqualFold(c.cfg.Transport.Protocol, "quic") {
+		log.Printf("Open1")
 		var tlsConfig *tls.Config
 		var err error
 		sn := c.cfg.Transport.TLS.ServerName
@@ -87,10 +89,12 @@ func (c *defaultConnectorImpl) Open() error {
 			return err
 		}
 		tlsConfig.NextProtos = []string{"frp"}
-
+		log.Printf("quic server name: %s", c.cfg.ServerAddr)
+		log.Printf("quic port: %s", c.cfg.ServerPort)
+		_, port := lookupIP4P(c.cfg.ServerAddr, c.cfg.ServerPort)
 		conn, err := quic.DialAddr(
 			c.ctx,
-			net.JoinHostPort(c.cfg.ServerAddr, strconv.Itoa(c.cfg.ServerPort)),
+			net.JoinHostPort(c.cfg.ServerAddr, strconv.Itoa(port)),
 			tlsConfig, &quic.Config{
 				MaxIdleTimeout:     time.Duration(c.cfg.Transport.QUIC.MaxIdleTimeout) * time.Second,
 				MaxIncomingStreams: int64(c.cfg.Transport.QUIC.MaxIncomingStreams),
@@ -145,6 +149,7 @@ func (c *defaultConnectorImpl) Connect() (net.Conn, error) {
 }
 
 func (c *defaultConnectorImpl) realConnect() (net.Conn, error) {
+	log.Printf("realConnect")
 	xl := xlog.FromContextSafe(c.ctx)
 	var tlsConfig *tls.Config
 	var err error
@@ -206,11 +211,13 @@ func (c *defaultConnectorImpl) realConnect() (net.Conn, error) {
 		libnet.WithProxy(proxyType, addr),
 		libnet.WithProxyAuth(auth),
 	)
+	_, port := lookupIP4P(c.cfg.ServerAddr, c.cfg.ServerPort)
 	conn, err := libnet.DialContext(
 		c.ctx,
-		net.JoinHostPort(c.cfg.ServerAddr, strconv.Itoa(c.cfg.ServerPort)),
+		net.JoinHostPort(c.cfg.ServerAddr, strconv.Itoa(port)),
 		dialOptions...,
 	)
+	log.Printf("dial server: %s", net.JoinHostPort(c.cfg.ServerAddr, strconv.Itoa(port)))
 	return conn, err
 }
 
