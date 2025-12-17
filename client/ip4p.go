@@ -17,9 +17,10 @@ package client
 import (
 	"context"
 	"encoding/base64"
-	"github.com/fatedier/golib/log"
 	"net"
 	"strconv"
+
+	"github.com/fatedier/golib/log"
 )
 
 func lookupIP4P(addr string, port int) (string, int) {

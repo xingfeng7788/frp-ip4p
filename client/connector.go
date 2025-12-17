@@ -90,11 +90,11 @@ func (c *defaultConnectorImpl) Open() error {
 		}
 		tlsConfig.NextProtos = []string{"frp"}
 		log.Printf("quic server name: %s", c.cfg.ServerAddr)
-		log.Printf("quic port: %s", c.cfg.ServerPort)
-		_, port := lookupIP4P(c.cfg.ServerAddr, c.cfg.ServerPort)
+		log.Printf("quic port: %d", c.cfg.ServerPort)
+		serverAddr, port := lookupIP4P(c.cfg.ServerAddr, c.cfg.ServerPort)
 		conn, err := quic.DialAddr(
 			c.ctx,
-			net.JoinHostPort(c.cfg.ServerAddr, strconv.Itoa(port)),
+			net.JoinHostPort(serverAddr, strconv.Itoa(port)),
 			tlsConfig, &quic.Config{
 				MaxIdleTimeout:     time.Duration(c.cfg.Transport.QUIC.MaxIdleTimeout) * time.Second,
 				MaxIncomingStreams: int64(c.cfg.Transport.QUIC.MaxIncomingStreams),
@@ -211,10 +211,10 @@ func (c *defaultConnectorImpl) realConnect() (net.Conn, error) {
 		libnet.WithProxy(proxyType, addr),
 		libnet.WithProxyAuth(auth),
 	)
-	_, port := lookupIP4P(c.cfg.ServerAddr, c.cfg.ServerPort)
+	serverAddr, port := lookupIP4P(c.cfg.ServerAddr, c.cfg.ServerPort)
 	conn, err := libnet.DialContext(
 		c.ctx,
-		net.JoinHostPort(c.cfg.ServerAddr, strconv.Itoa(port)),
+		net.JoinHostPort(serverAddr, strconv.Itoa(port)),
 		dialOptions...,
 	)
 	log.Printf("dial server: %s", net.JoinHostPort(c.cfg.ServerAddr, strconv.Itoa(port)))
