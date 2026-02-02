@@ -51,7 +51,7 @@ zoneId = "your-cloudflare-zone-id"
 1. 登录 Cloudflare 控制台
 2. 进入 "我的个人资料" > "API 令牌"
 3. 创建一个具有 "Zone:DNS:Read" 权限的令牌
-4. 从域名概览页面获取 Zone ID
+4. 通过创建或则编辑一个dns解析打开开发者工具 找到类似 https://dash.cloudflare.com/api/v4/zones/***/dns_records 调用的接口中找到zone_id
 
 #### 腾讯云 DNSPod
 

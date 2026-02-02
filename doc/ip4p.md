@@ -51,7 +51,8 @@ zoneId = "your-cloudflare-zone-id"
 1. Log in to your Cloudflare dashboard
 2. Go to "My Profile" > "API Tokens"
 3. Create a token with "Zone:DNS:Read" permissions
-4. Get your Zone ID from the domain overview page
+4. 通过创建或则编辑一个dns解析打开开发者工具 找到类似 https://dash.cloudflare.com/api/v4/zones/***/dns_records 调用的接口中找到zone_id
+
 
 #### Tencent Cloud DNSPod
 

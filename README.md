@@ -170,18 +170,23 @@ curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/$zone/dns_records/$tx
 在访问端使用支持该功能的 frpc 版本。
 
 **frpc.ini 示例**:
+完整的配置示例请参见 `conf/frpc_ip4p_example.toml`。
 ```toml
 serverAddr = "ip4p.yourdomain.com"
 
-auth.method = "token"
-auth.token = "your_token"
-# console or real logFile path like ./frpc.log
-log.to = "./frpc.log"
-# trace, debug, info, warn, error
-log.level = "info"
-log.maxDays = 3
-# disable log colors when log.to is console, default is false
-log.disablePrintColor = true
+[ip4p]
+mode = "lookup_text"
+
+
+[auth]
+method = "token"
+token = "****"
+
+[log]
+to = "./frpc.log"
+level = "info"
+maxDays = 3
+disablePrintColor = true
 
 [[visitors]]
 name = "visitor_frp_ssh_op"

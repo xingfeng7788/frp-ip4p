@@ -9,6 +9,16 @@ serverPort = 7000
 [ip4p]
 mode = "lookup_text"
 
+[auth]
+method = "token"
+token = "****"
+
+[log]
+to = "./frpc.log"
+level = "info"
+maxDays = 3
+disablePrintColor = true
+
 # Example 3: Cloudflare API mode
 # [ip4p]
 # mode = "api"
