@@ -117,15 +117,15 @@ STUN 穿透的端口通常不固定。通过 Cloudflare 页面规则虽然可以
 serverAddr = "192.168.0.1"
 serverPort = 7000
 
-auth.method = "token"
-auth.token = "frps定义token"
-# console or real logFile path like ./frpc.log
-log.to = "/var/log/frpc.log"
-# trace, debug, info, warn, error
-log.level = "info"
-log.maxDays = 3
-# disable log colors when log.to is console, default is false
-log.disablePrintColor = true
+[auth]
+method = "token"
+token = "****"
+
+[log]
+to = "./frpc.log"
+level = "info"
+maxDays = 3
+disablePrintColor = true
 
 [[proxies]]
 name = "frp_ssh_op"
