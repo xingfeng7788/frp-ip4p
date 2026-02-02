@@ -64,6 +64,7 @@ type ClientCommonConfig struct {
 	WebServer  WebServerConfig       `json:"webServer,omitempty"`
 	Transport  ClientTransportConfig `json:"transport,omitempty"`
 	VirtualNet VirtualNetConfig      `json:"virtualNet,omitempty"`
+	IP4P       IP4PConfig            `json:"ip4p,omitempty"`
 
 	// FeatureGates specifies a set of feature gates to enable or disable.
 	// This can be used to enable alpha/beta features or disable default features.
@@ -91,6 +92,7 @@ func (c *ClientCommonConfig) Complete() error {
 	c.Log.Complete()
 	c.Transport.Complete()
 	c.WebServer.Complete()
+	c.IP4P.Complete()
 
 	c.UDPPacketSize = util.EmptyOr(c.UDPPacketSize, 1500)
 	return nil

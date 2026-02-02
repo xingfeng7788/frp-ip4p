@@ -139,6 +139,17 @@ transport.tls.enable = true
 # Specify a dns server, so frpc will use this instead of default one
 # dnsServer = "8.8.8.8"
 
+# IP4P configuration for dynamic server address resolution
+# Mode can be "lookup_text" (default) or "api"
+# ip4p.mode = "lookup_text"
+
+# When using API mode, specify the DNS provider
+# Supported providers: cloudflare, tencent, alibaba
+# ip4p.provider = "cloudflare"
+# ip4p.apiKey = "your-api-key"
+# ip4p.apiSecret = "your-api-secret"  # Required for tencent and alibaba
+# ip4p.zoneId = "your-zone-id"  # Required for cloudflare
+
 # Proxy names you want to start.
 # Default is empty, means all proxies.
 # start = ["ssh", "dns"]

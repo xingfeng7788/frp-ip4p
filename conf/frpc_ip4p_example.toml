@@ -1,0 +1,51 @@
+# frpc IP4P Configuration Examples
+
+# Example 1: Default lookup_text mode (backward compatible)
+# This is the default behavior if ip4p section is not specified
+serverAddr = "example.com"
+serverPort = 7000
+
+# Example 2: Explicit lookup_text mode
+[ip4p]
+mode = "lookup_text"
+
+# Example 3: Cloudflare API mode
+# [ip4p]
+# mode = "api"
+# provider = "cloudflare"
+# apiKey = "your-cloudflare-api-token"
+# zoneId = "your-cloudflare-zone-id"
+
+# Example 4: Tencent Cloud DNSPod API mode
+# [ip4p]
+# mode = "api"
+# provider = "tencent"
+# apiKey = "your-tencent-secret-id"
+# apiSecret = "your-tencent-secret-key"
+
+# Example 5: Alibaba Cloud DNS API mode
+# [ip4p]
+# mode = "api"
+# provider = "alibaba"
+# apiKey = "your-alibaba-access-key-id"
+# apiSecret = "your-alibaba-access-key-secret"
+
+# Complete example with Cloudflare
+# serverAddr = "frp.example.com"
+# serverPort = 7000
+# 
+# [auth]
+# token = "your-auth-token"
+# 
+# [ip4p]
+# mode = "api"
+# provider = "cloudflare"
+# apiKey = "your-cloudflare-api-token"
+# zoneId = "your-cloudflare-zone-id"
+# 
+# [[proxies]]
+# name = "ssh"
+# type = "tcp"
+# localIP = "127.0.0.1"
+# localPort = 22
+# remotePort = 6000

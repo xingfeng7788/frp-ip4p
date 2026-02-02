@@ -44,8 +44,9 @@ type Connector interface {
 
 // defaultConnectorImpl is the default implementation of Connector for normal frpc.
 type defaultConnectorImpl struct {
-	ctx context.Context
-	cfg *v1.ClientCommonConfig
+	ctx        context.Context
+	cfg        *v1.ClientCommonConfig
+	ip4pLookup *IP4PLookup
 
 	muxSession *fmux.Session
 	quicConn   *quic.Conn
@@ -53,9 +54,14 @@ type defaultConnectorImpl struct {
 }
 
 func NewConnector(ctx context.Context, cfg *v1.ClientCommonConfig) Connector {
+	ip4pLookup, err := NewIP4PLookup(&cfg.IP4P)
+	if err != nil {
+		xlog.FromContextSafe(ctx).Warnf("failed to initialize IP4P lookup: ", err)
+	}
 	return &defaultConnectorImpl{
-		ctx: ctx,
-		cfg: cfg,
+		ctx:        ctx,
+		cfg:        cfg,
+		ip4pLookup: ip4pLookup,
 	}
 }
 
@@ -91,7 +97,12 @@ func (c *defaultConnectorImpl) Open() error {
 		tlsConfig.NextProtos = []string{"frp"}
 		log.Printf("quic server name: %s", c.cfg.ServerAddr)
 		log.Printf("quic port: %d", c.cfg.ServerPort)
-		serverAddr, port := lookupIP4P(c.cfg.ServerAddr, c.cfg.ServerPort)
+
+		serverAddr, port := c.cfg.ServerAddr, c.cfg.ServerPort
+		if c.ip4pLookup != nil {
+			serverAddr, port = c.ip4pLookup.Lookup(c.ctx, c.cfg.ServerAddr, c.cfg.ServerPort)
+		}
+
 		conn, err := quic.DialAddr(
 			c.ctx,
 			net.JoinHostPort(serverAddr, strconv.Itoa(port)),
@@ -211,7 +222,12 @@ func (c *defaultConnectorImpl) realConnect() (net.Conn, error) {
 		libnet.WithProxy(proxyType, addr),
 		libnet.WithProxyAuth(auth),
 	)
-	serverAddr, port := lookupIP4P(c.cfg.ServerAddr, c.cfg.ServerPort)
+
+	serverAddr, port := c.cfg.ServerAddr, c.cfg.ServerPort
+	if c.ip4pLookup != nil {
+		serverAddr, port = c.ip4pLookup.Lookup(c.ctx, c.cfg.ServerAddr, c.cfg.ServerPort)
+	}
+
 	conn, err := libnet.DialContext(
 		c.ctx,
 		net.JoinHostPort(serverAddr, strconv.Itoa(port)),
