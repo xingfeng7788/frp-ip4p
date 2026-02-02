@@ -37,7 +37,7 @@ jobs:
           file: ./dockerfiles/Dockerfile-for-frpc
           platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/ppc64le,linux/s390x
           push: true
-          tags: qq510023514/frpc:${{ github.ref_name }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/frpc:${{ github.ref_name }}
 
       - name: Build and push frps
         uses: docker/build-push-action@v5
@@ -46,4 +46,4 @@ jobs:
           file: ./dockerfiles/Dockerfile-for-frps
           platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/ppc64le,linux/s390x
           push: true
-          tags: qq510023514/frps:${{ github.ref_name }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/frps:${{ github.ref_name }}
