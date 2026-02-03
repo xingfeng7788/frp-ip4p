@@ -40,6 +40,7 @@ import (
 	"github.com/fatedier/frp/server/controller"
 	"github.com/fatedier/frp/server/metrics"
 	"github.com/fatedier/frp/server/proxy"
+	"github.com/fatedier/frp/server/registry"
 )
 
 type ControlManager struct {
@@ -106,6 +107,8 @@ type Control struct {
 
 	// verifies authentication based on selected method
 	authVerifier auth.Verifier
+	// key used for connection encryption
+	encryptionKey []byte
 
 	// other components can use this to communicate with client
 	msgTransporter transport.MessageTransporter
@@ -145,6 +148,8 @@ type Control struct {
 	// Server configuration information
 	serverCfg *v1.ServerConfig
 
+	clientRegistry *registry.ClientRegistry
+
 	xl     *xlog.Logger
 	ctx    context.Context
 	doneCh chan struct{}
@@ -157,6 +162,7 @@ func NewControl(
 	pxyManager *proxy.Manager,
 	pluginManager *plugin.Manager,
 	authVerifier auth.Verifier,
+	encryptionKey []byte,
 	ctlConn net.Conn,
 	ctlConnEncrypted bool,
 	loginMsg *msg.Login,
@@ -171,6 +177,7 @@ func NewControl(
 		pxyManager:    pxyManager,
 		pluginManager: pluginManager,
 		authVerifier:  authVerifier,
+		encryptionKey: encryptionKey,
 		conn:          ctlConn,
 		loginMsg:      loginMsg,
 		workConnCh:    make(chan net.Conn, poolCount+10),
@@ -186,7 +193,7 @@ func NewControl(
 	ctl.lastPing.Store(time.Now())
 
 	if ctlConnEncrypted {
-		cryptoRW, err := netpkg.NewCryptoReadWriter(ctl.conn, []byte(ctl.serverCfg.Auth.Token))
+		cryptoRW, err := netpkg.NewCryptoReadWriter(ctl.conn, ctl.encryptionKey)
 		if err != nil {
 			return nil, err
 		}
@@ -195,7 +202,7 @@ func NewControl(
 		ctl.msgDispatcher = msg.NewDispatcher(ctl.conn)
 	}
 	ctl.registerMsgHandlers()
-	ctl.msgTransporter = transport.NewMessageTransporter(ctl.msgDispatcher.SendChannel())
+	ctl.msgTransporter = transport.NewMessageTransporter(ctl.msgDispatcher)
 	return ctl, nil
 }
 
@@ -354,6 +361,7 @@ func (ctl *Control) worker() {
 	}
 
 	metrics.Server.CloseClient()
+	ctl.clientRegistry.MarkOfflineByRunID(ctl.runID)
 	xl.Infof("client exit success")
 	close(ctl.doneCh)
 }
@@ -397,7 +405,11 @@ func (ctl *Control) handleNewProxy(m msg.Message) {
 	} else {
 		resp.RemoteAddr = remoteAddr
 		xl.Infof("new proxy [%s] type [%s] success", inMsg.ProxyName, inMsg.ProxyType)
-		metrics.Server.NewProxy(inMsg.ProxyName, inMsg.ProxyType)
+		clientID := ctl.loginMsg.ClientID
+		if clientID == "" {
+			clientID = ctl.loginMsg.RunID
+		}
+		metrics.Server.NewProxy(inMsg.ProxyName, inMsg.ProxyType, ctl.loginMsg.User, clientID)
 	}
 	_ = ctl.msgDispatcher.Send(resp)
 }
@@ -478,6 +490,7 @@ func (ctl *Control) RegisterProxy(pxyMsg *msg.NewProxy) (remoteAddr string, err 
 		GetWorkConnFn:      ctl.GetWorkConn,
 		Configurer:         pxyConf,
 		ServerCfg:          ctl.serverCfg,
+		EncryptionKey:      ctl.encryptionKey,
 	})
 	if err != nil {
 		return remoteAddr, err

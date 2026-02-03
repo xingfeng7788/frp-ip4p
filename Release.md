@@ -1,5 +1,8 @@
 ## Features
 
-* Add NAT traversal configuration options for XTCP proxies and visitors. Support disabling assisted addresses to avoid using slow VPN connections during NAT hole punching.
-* Enhanced OIDC client configuration with support for custom TLS certificate verification and proxy settings. Added `trustedCaFile`, `insecureSkipVerify`, and `proxyURL` options for OIDC token endpoint connections.
-* Added detailed Prometheus metrics with `proxy_counts_detailed` metric that includes both proxy type and proxy name labels, enabling monitoring of individual proxy connections instead of just aggregate counts.
+* frpc now supports a `clientID` option to uniquely identify client instances. The server dashboard displays all connected clients with their online/offline status, connection history, and metadata, making it easier to monitor and manage multiple frpc deployments.
+* Redesigned the frp web dashboard with a modern UI, dark mode support, and improved navigation.
+
+## Fixes
+
+* Fixed UDP proxy protocol sending header on every packet instead of only the first packet of each session.
